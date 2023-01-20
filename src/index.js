@@ -21,8 +21,6 @@ class ActivitySDK extends EventEmitter  {
       let d = message.data;
       const opcode = d[0];
       if(!OPCODES[opcode]) throw "Invalid opcode recieved: " + opcode
-      console.log(OPCODES[opcode])
-      console.log(message.data)
       switch(OPCODES[opcode]){
         case "HANDSHAKE":
           return;
