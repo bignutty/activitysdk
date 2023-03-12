@@ -1,20 +1,16 @@
-module.exports.OPCODES = Object.freeze({
-  0: "HANDSHAKE",
-  1: "FRAME",
-  2: "CLOSE",
-  3: "HELLO",
-  "HANDSHAKE": 0,
-  "FRAME": 1,
-  "CLOSE": 2,
-  "HELLO": 3
-})
+export enum OPCODES { //* same as the object you had.
+  "HANDSHAKE",
+  "FRAME",
+  "CLOSE",
+  "HELLO",
+};
 
-module.exports.PLATFORM_TYPES = Object.freeze([
+export const PLATFORM_TYPES = [
   "desktop",
   "mobile"
-])
+] as const;
 
-module.exports.RPC_EVENTS = Object.freeze([
+export const RPC_EVENTS = [
   "CURRENT_USER_UPDATE",
   "GUILD_STATUS",
   "GUILD_CREATE",
@@ -58,9 +54,9 @@ module.exports.RPC_EVENTS = Object.freeze([
   "VOICE_CHANNEL_EFFECT_TOGGLE_ANIMATION_TYPE",
   "READY",
   "ERROR"
-])
+] as const;
 
-module.exports.RPC_COMMANDS = Object.freeze([
+export const RPC_COMMANDS = [
   "DISPATCH",
   "SET_CONFIG",
   "AUTHORIZE",
@@ -134,4 +130,62 @@ module.exports.RPC_COMMANDS = Object.freeze([
   "CAPTURE_LOG",
   "ENCOURAGE_HW_ACCELERATION",
   "SET_ORIENTATION_LOCK_STATE"
-])
+] as const;
+
+//* pov: ottelino hates typescript
+//* (something) as const -> infers the type as the literal of this object -> makes it readonly.
+//* type LiteralType = "yeepee" | 0 | false
+//* type NormalType = string | number | boolean
+//*
+//? how 2 use:
+//? indexing an array type with "number" tells typescript to get the union of all elements in the array. easy to use because autocompletion/intellisense.
+//? interface -> object type but compiles faster.
+//? you can have functions that work as a type guard
+
+export type PlatformType = (typeof PLATFORM_TYPES)[number];
+export type RPCEvent = (typeof RPC_EVENTS)[number];
+export type RPCCommand = (typeof RPC_COMMANDS)[number];
+export interface RPCPayload<DataObj extends object> {
+  cmd: RPCCommand;
+  evt: RPCEvent | null;
+  nonce: string | null;
+  data?: DataObj; // sometimes its type of string for some reason.
+  args?: object; // object -> { [key: string]: any }
+}
+
+export function malformedRequestError() {
+  new Error("Malformed request from client.");
+}
+
+export function malformedResponseError() {
+  new Error("Malformed response from server.");
+}
+
+export function isPlatform(platform: unknown): platform is PlatformType {
+  if (!platform) return false;
+  if (typeof platform !== "string") return false;
+  if (!PLATFORM_TYPES.join(" ").includes(platform)) return false;
+  else return true;
+}
+
+export function isEvent(event: unknown): event is RPCEvent {
+  if (!event) return false;
+  if (typeof event !== "string") return false;
+  if (!RPC_EVENTS.join(" ").includes(event)) return false;
+  else return true;
+}
+
+export function isCommand(command: unknown): command is RPCCommand {
+  if (!command) return false;
+  if (typeof command !== "string") return false;
+  if (!RPC_COMMANDS.join(" ").includes(command)) return false;
+  else return true;
+}
+
+export function isMessage(message: unknown): message is RPCPayload<object> {
+  if (!message) return false;
+  if (typeof message !== "object") return false;
+  if (!("cmd" in message && "nonce" in message && "data" in message)) return false;
+  else return true;
+}
+
