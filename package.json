@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/justsomederpystuff/activitysdk.git"
+    "url": "git+https://github.com/UserUNP/activitysdk-ts.git"
   },
   "files": [
     "./dist", "./src",
@@ -24,7 +24,7 @@
   "author": "big nutty",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/justsomederpystuff/activitysdk/issues"
+    "url": "https://github.com/UserUNP/activitysdk-ts/issues"
   },
-  "homepage": "https://github.com/justsomederpystuff/activitysdk#readme"
+  "homepage": "https://github.com/UserUNP/activitysdk-ts"
 }
