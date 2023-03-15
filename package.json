@@ -1,7 +1,7 @@
 {
-  "name": "activitysdk",
+  "name": "activitysdk-ts",
   "version": "0.1.1",
-  "description": "Unofficial SDK to communicate between the discord client and an embedded activity.",
+  "description": "Typescript fork of activitysdk.",
   "main": "./dist/lib/index.js",
   "types": "./dist/types/index.d.ts",
   "dependencies": {
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/justsomederpystuff/activitysdk.git"
+    "url": "git+https://github.com/UserUNP/activitysdk-ts.git"
   },
   "files": [
     "./dist", "./src",
@@ -24,7 +24,7 @@
   "author": "big nutty",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/justsomederpystuff/activitysdk/issues"
+    "url": "https://github.com/UserUNP/activitysdk-ts/issues"
   },
-  "homepage": "https://github.com/justsomederpystuff/activitysdk#readme"
+  "homepage": "https://github.com/UserUNP/activitysdk-ts"
 }
