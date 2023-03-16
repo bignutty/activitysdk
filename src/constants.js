@@ -14,6 +14,12 @@ module.exports.PLATFORM_TYPES = Object.freeze([
   "mobile"
 ])
 
+module.exports.ORIENTATION_LOCK_STATES = Object.freeze({
+  "UNLOCKED": 1,
+  "PORTRAIT": 2,
+  "LANDSCAPE": 3
+})
+
 module.exports.RPC_EVENTS = Object.freeze([
   "CURRENT_USER_UPDATE",
   "GUILD_STATUS",
@@ -133,5 +139,6 @@ module.exports.RPC_COMMANDS = Object.freeze([
   "OPEN_EXTERNAL_LINK",
   "CAPTURE_LOG",
   "ENCOURAGE_HW_ACCELERATION",
-  "SET_ORIENTATION_LOCK_STATE"
+  "SET_ORIENTATION_LOCK_STATE",
+  "GET_PLATFORM_BEHAVIORS"
 ])

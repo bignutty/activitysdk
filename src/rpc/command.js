@@ -1,5 +1,7 @@
 // RPC Commands
 
+const { ORIENTATION_LOCK_STATES } = require("../constants");
+
 class ActivitySDKCommands {
   constructor(send) {
     this.sendCommand = send;
@@ -17,6 +19,10 @@ class ActivitySDKCommands {
     return this.sendCommand("SET_CONFIG", data);
   }
   
+  getCurrentUser(){
+    return this.sendCommand("GET_USER", {});
+  }
+
   getSelectedVoiceChannel(){
     return this.sendCommand("GET_SELECTED_VOICE_CHANNEL", {});
   }
@@ -25,8 +31,8 @@ class ActivitySDKCommands {
     return this.sendCommand("SET_ACTIVITY", data);
   }
 
-  getGuild(){
-    return this.sendCommand("GET_GUILD", {});
+  getGuild(id){
+    return this.sendCommand("GET_GUILD", { guild_id: id });
   }
 
   getGuilds(){
@@ -34,7 +40,7 @@ class ActivitySDKCommands {
   }
 
   getChannel(){
-    return this.sendCommand("GET_CHANNEL", {});
+    return this.sendCommand("GET_CHANNEL", { channel_id: id });
   }
 
   getChannels(){
@@ -55,6 +61,29 @@ class ActivitySDKCommands {
 
   getUserLocale(){
     return this.sendCommand("USER_SETTINGS_GET_LOCALE", {})
+  }
+
+  setOrientationStateLock(state){
+    if(typeof(state) == "string") state = ORIENTATION_LOCK_STATES[state.toUpperCase()]
+    return this.sendCommand("SET_ORIENTATION_LOCK_STATE", {
+      lock_state: state
+    })
+  }
+
+  openExternalLink(url){
+    return this.sendCommand("OPEN_EXTERNAL_LINK", { url })
+  }
+
+  getVoiceSettings(){
+    return this.sendCommand("GET_VOICE_SETTINGS", {})
+  }
+
+  setVoiceSettings(settings){
+    return this.sendCommand("SET_VOICE_SETTINGS", settings)
+  }
+
+  selectTextChannel(id){
+    return this.sendCommand("SELECT_TEXT_CHANNEL", { channel_id: id })
   }
 }
 

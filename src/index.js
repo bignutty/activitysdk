@@ -36,40 +36,47 @@ class ActivitySDK extends EventEmitter  {
       }
     }
 
-    this._sendCommand = (type, data) => {
-      if(!RPC_COMMANDS.includes(type)) throw "Invalid RPC Command: " + type
+    // Sends data to the RPC server via the iframe
+    this._sendData = (opcode, data) => {
       const nonce = uuid.v4();
       
+      data['nonce'] = nonce;
+
       this.rpcTarget.postMessage([
-        OPCODES.FRAME,
-        Object.assign(Object.assign({
-          cmd: type
-        }, { args: data }), { nonce }),
+        opcode,
+        data,
       ], this.rpcOrigin);
 
       const response = new Promise((resolve, reject) => this.commandCache.set(nonce, { resolve, reject }));
       return response;
     }
 
+    this._sendCommand = (type, data) => {
+      if(!RPC_COMMANDS.includes(type)) throw "Invalid RPC Command: " + type
+
+      return this._sendData(OPCODES.FRAME, {
+        cmd: type,
+        args: data
+      })
+    }
+
     this._sendCommandRaw = (type, data) => {
       if(!RPC_COMMANDS.includes(type)) throw "Invalid RPC Command: " + type
-      const nonce = uuid.v4();
-      
-      this.rpcTarget.postMessage([
-        OPCODES.FRAME,
-        Object.assign(Object.assign({
-          cmd: type
-        }, data), { nonce }),
-      ], this.rpcOrigin);
-
-      const response = new Promise((resolve, reject) => this.commandCache.set(nonce, { resolve, reject }));
-      return response;
+      return this._sendData(OPCODES.FRAME, Object.assign({
+        cmd: type
+      }, data))
     }
 
     this.commands = new ActivitySDKCommands(this._sendCommand);
 
     window.addEventListener('message', this._handleMessage);
     this._init();
+  }
+
+  // Closes the activity
+  close(data){
+    window.removeEventListener('message', this._handleMessage);
+    this._sendData(OPCODES.CLOSE, { code: data.code, message: data.message })
   }
 
   // Command Handling
@@ -80,7 +87,7 @@ class ActivitySDK extends EventEmitter  {
     this.commandCache.delete(nonce)
   }
 
-  _rejectCommand(nonce){
+  _rejectCommand(nonce, data){
     const response = this.commandCache.get(nonce)
     if(response) response.reject(data)
     
@@ -91,19 +98,19 @@ class ActivitySDK extends EventEmitter  {
     if(data.cmd == "DISPATCH") return this.emit(data.evt, data.data);
 
     if(!data.nonce) throw "Missing nonce"
-    if(data.cmd == "ERROR"){
-      this._rejectCommand(data.nonce, data.data)
-    }
 
-    this._resolveCommand(data.nonce, data.data)
+    if(data.evt == "ERROR") return this._rejectCommand(data.nonce, data.data);
+
+    return this._resolveCommand(data.nonce, data.data);
   };
 
   // Handling RPC Events
-  async subscribe(event, reciever){
+  async subscribe(event, args, reciever){
     if(!RPC_EVENTS.includes(event)) throw "Invalid RPC Event: " + type
 
     await this._sendCommandRaw("SUBSCRIBE", {
-      evt: event
+      evt: event,
+      args
     })
 
     return this.on(event, reciever)
