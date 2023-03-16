@@ -16,7 +16,7 @@ const sdk = new ActivitySDK("app id");
 sdk.on("READY", async () => {
   let user;
   try {
-    user = (await sdk.commands.authenticate("app secret", ["identify"])).user;
+    user = (await sdk.login("app secret", ["identify"])).user;
   } catch (e) {
     console.error("could not authorize/authenticate");
     return;
