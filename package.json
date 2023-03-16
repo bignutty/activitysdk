@@ -1,6 +1,6 @@
 {
   "name": "activitysdk-ts",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "Typescript fork of activitysdk.",
   "main": "./dist/lib/index.js",
   "types": "./dist/types/index.d.ts",
@@ -21,7 +21,7 @@
     "./dist", "./src",
     "./README.md", "./LICENSE"
   ],
-  "author": "big nutty",
+  "author": "UserUNP",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/UserUNP/activitysdk-ts/issues"
