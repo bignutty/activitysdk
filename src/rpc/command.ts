@@ -1,25 +1,25 @@
-import { RPCCommand, RPCPayload, malformedRequestError, malformedResponseError } from "../constants";
+import {
+  RPCCommand,
+  DEFAULT_AUTH_SCOPES,
+  ORIENTATION_LOCK_STATES,
+  OrientationState
+} from "../constants";
 
 export default class ActivitySDKCommands {
 
-  constructor(private appId: string, private appSecret: string, public sendCommandHandler: <DataObj extends object>(type: RPCCommand, args: Required<RPCPayload<DataObj>["args"]>) => Promise<RPCPayload<DataObj>["data"]>) {}
+  constructor(private appId: string, public sendCommandHandler: <DataObj extends object>(type: RPCCommand, args: object) => Promise<DataObj>) { }
 
-  async authenticate(scopes: string[], rpcToken?: string) {
-    const authorizeRes = await this.sendCommandHandler<AuthorizeResponseData>("AUTHORIZE", {
-      client_id: this.appId, rpc_token: rpcToken, scopes
-    });
-    if (!authorizeRes || !("code" in authorizeRes) || typeof authorizeRes.code !== "string") throw malformedResponseError();
-    const authenticateRes: object = await (await fetch("https://discord.com/api/oauth2/token", {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({
-        grant_type: "authorization_code",
-        code: authorizeRes.code,
-        client_id: this.appId,
-        client_secret: this.appSecret
-      })
-    })).json();
-    if (!authenticateRes || "error" in authenticateRes || !("access_token" in authenticateRes) || typeof authenticateRes.access_token !== "string") throw malformedRequestError();
+  async authenticate(accessToken: string) {
     return await this.sendCommandHandler<AuthenticateResponseData>("AUTHENTICATE", {
-      access_token: authenticateRes.access_token
+      access_token: accessToken
+    });
+  }
+
+  async authorize(scopes: readonly string[] = DEFAULT_AUTH_SCOPES, consent: boolean = false) {
+    return await this.sendCommandHandler<AuthorizeResponseData>("AUTHORIZE", {
+      client_id: this.appId, scopes,
+      response_type: "code", state: "",
+      prompt: !consent ? "none" : "consent",
     });
   }
 
@@ -53,8 +53,8 @@ export default class ActivitySDKCommands {
     return await this.sendCommandHandler<GetChannelsResponseData>("GET_CHANNELS", { guild_id: guildId });
   }
 
-  async createChannelInvite() {
-    return await this.sendCommandHandler("CREATE_CHANNEL_INVITE", {});
+  async createChannelInvite(channelId: string) {
+    return await this.sendCommandHandler<CreateChannelInviteResponseData>("CREATE_CHANNEL_INVITE", { channel_id: channelId });
   }
 
   async openInviteDialog() {
@@ -67,6 +67,28 @@ export default class ActivitySDKCommands {
 
   async getUserLocale() {
     return await this.sendCommandHandler("USER_SETTINGS_GET_LOCALE", {});
+  }
+
+  async setOrientationStateLock(state: OrientationState | ORIENTATION_LOCK_STATES) {
+    return this.sendCommandHandler("SET_ORIENTATION_LOCK_STATE", {
+      lock_state: typeof state === "string" ? ORIENTATION_LOCK_STATES[Object.values(ORIENTATION_LOCK_STATES).indexOf(state) + 1] : state
+    })
+  }
+
+  async openExternalLink(url: string) {
+    return this.sendCommandHandler("OPEN_EXTERNAL_LINK", { url });
+  }
+
+  async getVoiceSettings() {
+    return this.sendCommandHandler("GET_VOICE_SETTINGS", {});
+  }
+
+  async setVoiceSettings(settings: object) {
+    return this.sendCommandHandler("SET_VOICE_SETTINGS", settings);
+  }
+
+  async selectTextChannel(channelId: string) {
+    return this.sendCommandHandler("SELECT_TEXT_CHANNEL", { channel_id: channelId });
   }
 }
 
@@ -139,9 +161,20 @@ export interface GetChannelResponseData {
   permissions?: string;
   flags?: number;
   bitrate?: number;
-  voice_states: object[]; //* https://discord.com/developers/docs/resources/voice#voice-state-object
-  messages: object[]; //* https://discord.com/developers/docs/resources/channel#message-object
+  /**
+   * @see https://discord.com/developers/docs/resources/voice#voice-state-object
+   */
+  voice_states?: object[];
+  /**
+   * @see https://discord.com/developers/docs/resources/channel#message-object
+   */
+  messages: object[];
 }
 export interface GetChannelsResponseData {
   channels: GetChannelResponseData[];
+}
+
+export interface CreateChannelInviteResponseData {
+  code: string;
+  expires: number;
 }

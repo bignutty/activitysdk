@@ -1,16 +1,27 @@
 export enum OPCODES { //* same as the object you had.
-  "HANDSHAKE",
-  "FRAME",
-  "CLOSE",
-  "HELLO",
+  HANDSHAKE,
+  FRAME,
+  CLOSE,
+  HELLO,
 };
 
-export const PLATFORM_TYPES = [
+export enum ORIENTATION_LOCK_STATES {
+  UNLOCKED = 1,
+  PORTRAIT,
+  LANDSCAPE
+};
+
+export const PLATFORM_TYPES = Object.freeze([
   "desktop",
   "mobile"
-] as const;
+] as const);
 
-export const RPC_EVENTS = [
+export const DEFAULT_AUTH_SCOPES = Object.freeze([
+  "identify", "rpc",
+  "guilds", "guilds.members.read"
+] as const);
+
+export const RPC_EVENTS = Object.freeze([
   "CURRENT_USER_UPDATE",
   "GUILD_STATUS",
   "GUILD_CREATE",
@@ -53,10 +64,12 @@ export const RPC_EVENTS = [
   "VOICE_CHANNEL_EFFECT_RECENT_EMOJI",
   "VOICE_CHANNEL_EFFECT_TOGGLE_ANIMATION_TYPE",
   "READY",
-  "ERROR"
-] as const;
+  "ERROR",
+  "SET_ORIENTATION_LOCK_STATE",
+  "GET_PLATFORM_BEHAVIORS"
+] as const);
 
-export const RPC_COMMANDS = [
+export const RPC_COMMANDS = Object.freeze([
   "DISPATCH",
   "SET_CONFIG",
   "AUTHORIZE",
@@ -130,7 +143,7 @@ export const RPC_COMMANDS = [
   "CAPTURE_LOG",
   "ENCOURAGE_HW_ACCELERATION",
   "SET_ORIENTATION_LOCK_STATE"
-] as const;
+] as const);
 
 //* pov: ottelino hates typescript
 //* (something) as const -> infers the type as the literal of this object -> makes it readonly.
@@ -142,11 +155,12 @@ export const RPC_COMMANDS = [
 //? interface -> object type but compiles faster.
 //? you can have functions that work as a type guard
 
+export type OrientationState = "unlocked" | "portrait" | "landscape";
 export type PlatformType = (typeof PLATFORM_TYPES)[number];
 export type RPCEvent = (typeof RPC_EVENTS)[number];
 export type RPCCommand = (typeof RPC_COMMANDS)[number];
 export interface RPCPayload<DataObj extends object> {
-  cmd: RPCCommand;
+  cmd: RPCCommand | null;
   evt: RPCEvent | null;
   nonce: string | null;
   data?: DataObj; // sometimes its type of string for some reason.
@@ -159,6 +173,10 @@ export function malformedRequestError() {
 
 export function malformedResponseError() {
   new Error("Malformed response from server.");
+}
+
+export function debug(...message: any[]) {
+  console.debug("[ActivitySDK]", ...message);
 }
 
 export function isPlatform(platform: unknown): platform is PlatformType {
@@ -182,10 +200,17 @@ export function isCommand(command: unknown): command is RPCCommand {
   else return true;
 }
 
-export function isMessage(message: unknown): message is RPCPayload<object> {
+export function isPayload(message: unknown): message is RPCPayload<object> {
   if (!message) return false;
   if (typeof message !== "object") return false;
   if (!("cmd" in message && "nonce" in message && "data" in message)) return false;
+  else return true;
+}
+
+export function isOrientationState(orientationCode: unknown): orientationCode is ORIENTATION_LOCK_STATES {
+  if (!orientationCode) return false;
+  if (typeof orientationCode !== "number") return false;
+  if (!ORIENTATION_LOCK_STATES[orientationCode]) return false;
   else return true;
 }
 
