@@ -3,4 +3,7 @@
 
 Unofficial SDK to communicate between the discord client and an embedded activity.
 
-Documentation and examples will be coming soon.
+## Using activitysdk
+For an example of how to integrate activitysdk into your project, check out [activity-framework](https://github.com/justsomederpystuff/activity-framework/).
+
+If you have any further questions, feel free to ask them in my [discord server](https://discord.gg/DDg5Z7kZvs).
